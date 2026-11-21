@@ -1,56 +1,93 @@
 package ru.dodix.dodoradar
 
-import android.Manifest
-import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.viewModels
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+
+// Оранжевый Додо
+val DodoOrange = Color(0xFFFF6900)
 
 class MainActivity : ComponentActivity() {
-    private val vm: MainViewModel by viewModels()
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            DodoTheme {
-                val askNotif = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {}
-                LaunchedEffect(Unit) {
-                    if (Build.VERSION.SDK_INT >= 33) askNotif.launch(Manifest.permission.POST_NOTIFICATIONS)
-                }
-                val installed by vm.modelInstalled.collectAsState()
-                var tab by rememberSaveable { mutableIntStateOf(if (installed) 0 else 3) }
-                val msg by vm.message.collectAsState()
-                val snack = remember { SnackbarHostState() }
-                LaunchedEffect(msg) { msg?.let { snack.showSnackbar(it); vm.message.value = null } }
-
-                Scaffold(
-                    snackbarHost = { SnackbarHost(snack) },
-                    bottomBar = {
-                        NavigationBar {
-                            listOf("🍕 Главная", "📡 Источники", "⚙️ Настройки", "🧠 Модель").forEachIndexed { i, t ->
-                                NavigationBarItem(selected = tab == i, onClick = { tab = i },
-                                    icon = { Text(t.substringBefore(' ')) }, label = { Text(t.substringAfter(' ')) })
-                            }
-                        }
-                    },
-                ) { pad ->
-                    val m = Modifier.padding(pad)
-                    when (tab) {
-                        0 -> HomeScreen(vm, m) { tab = 3 }
-                        1 -> SourcesScreen(vm, m)
-                        2 -> SettingsScreen(vm, m)
-                        else -> ModelScreen(vm, m)
-                    }
+            MaterialTheme {
+                Surface(
+                    modifier = Modifier.fillMaxSize(), 
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    MainScreen()
                 }
             }
         }
     }
 }
+
+@Composable
+fun MainScreen() {
+    val newsItems = remember { listOf(
+        NewsItem("Открытие новой школы", "Школа №4 открывает двери", "Предложить пиццу классам", "Новость о школе касается родителей."),
+        NewsItem("Ярмарка выходного дня", "На площади пройдет ярмарка", "Сделать промо 'Пицца для пикника'", "Люди будут гулять и захотят перекусить.")
+    )}
+
+    Column(modifier = Modifier.padding(16.dp)) {
+        Text(
+            text = "🍕 Додо Радар",
+            fontSize = 28.sp,
+            fontWeight = FontWeight.Bold,
+            color = DodoOrange
+        )
+        Text(text = "Фрязино • Сегодня", fontSize = 14.sp, color = Color.Gray)
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        LazyColumn(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            items(newsItems) { item ->
+                NewsCard(item)
+            }
+        }
+    }
+}
+
+@Composable
+fun NewsCard(item: NewsItem) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(text = item.title, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(text = item.description, fontSize = 14.sp)
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            Text(text = "💡 Идея: ${item.idea}", color = DodoOrange, fontWeight = FontWeight.Medium)
+            Text(text = "Причина: ${item.reason}", fontSize = 12.sp, color = Color.Gray)
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            Button(
+                onClick = { /* Открыть ссылку */ }, 
+                colors = ButtonDefaults.buttonColors(containerColor = DodoOrange)
+            ) {
+                Text("Открыть новость")
+            }
+        }
+    }
+}
+
+data class NewsItem(
+    val title: String,
+    val description: String,
+    val idea: String,
+    val reason: String
+)
