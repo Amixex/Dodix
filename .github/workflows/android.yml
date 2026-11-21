@@ -27,48 +27,39 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Set up Gradle
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK, NDK and CMake
+        run: |
+          yes | sdkmanager --licenses
+          sdkmanager \
+            "platforms;android-35" \
+            "build-tools;35.0.0" \
+            "ndk;27.2.12479018" \
+            "cmake;3.22.1"
+
+      - name: Set up Gradle 8.9
         uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.9"
 
-      - name: Find Android project
-        shell: bash
+      - name: Check project structure
         run: |
-          GRADLEW=$(find . -type f -name gradlew \
-            -not -path '*/.gradle/*' -print -quit)
+          test -f dodix-dodo-radar/settings.gradle.kts
+          test -f dodix-dodo-radar/build.gradle.kts
+          test -f dodix-dodo-radar/app/build.gradle.kts
+          echo "Android project found!"
 
-          if [ -z "$GRADLEW" ]; then
-            echo "ERROR: gradlew not found!"
-            exit 1
-          fi
+      - name: Build Debug APK
+        working-directory: dodix-dodo-radar
+        run: gradle assembleDebug --stacktrace
 
-          PROJECT_DIR=$(dirname "$GRADLEW")
-          echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
-          chmod +x "$GRADLEW"
-
-      - name: Build APK
-        run: ./gradlew assembleDebug
-        working-directory: ${{ env.PROJECT_DIR }}
-
-      - name: Prepare APK
-        shell: bash
-        run: |
-          APK=$(find "$PROJECT_DIR" -type f \
-            -path '*/build/outputs/apk/debug/*.apk' \
-            -print -quit)
-
-          if [ -z "$APK" ]; then
-            echo "ERROR: APK not found!"
-            exit 1
-          fi
-
-          mkdir -p dist
-          cp "$APK" dist/dodix-debug.apk
-
-      - name: Upload APK artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: Dodix-Android-APK
-          path: dist/dodix-debug.apk
+          path: dodix-dodo-radar/app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
           retention-days: 30
 
@@ -76,5 +67,5 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/dodix-debug.apk
+          files: dodix-dodo-radar/app/build/outputs/apk/debug/*.apk
           generate_release_notes: true
