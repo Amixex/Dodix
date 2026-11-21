@@ -1,34 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
-
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <application
-        android:name=".App"
-        android:allowBackup="false"
-        android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
+        android:allowBackup="true"
+        android:label="Dodix Radar"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Dodix">
-
+        android:theme="@android:style/Theme.Material.Light.NoActionBar">
         <activity
             android:name=".MainActivity"
-            android:exported="true"
-            android:theme="@style/Theme.Dodix">
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <service
-            android:name="androidx.work.impl.foreground.SystemForegroundService"
-            android:foregroundServiceType="dataSync"
-            tools:node="merge" />
     </application>
+
 </manifest>
