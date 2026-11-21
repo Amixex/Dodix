@@ -1,14 +1,16 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    // Применяем плагин Compose (без указания версии):
+    id("org.jetbrains.kotlin.plugin.compose") 
 }
 
 android {
-    namespace = "com.dodix.radar"
+    namespace = "ru.dodix.dodoradar"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.dodix.radar"
+        applicationId = "ru.dodix.dodoradar"
         minSdk = 28
         targetSdk = 34
         versionCode = 1
@@ -16,13 +18,13 @@ android {
     }
 
     buildFeatures {
-        compose = true
+        compose = true // Включаем Compose
     }
 
-    // Добавьте этот блок:
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.13"
-    }
+    // УБЕДИТЕСЬ, ЧТО ЭТОГО БЛОКА НЕТ:
+    // composeOptions {
+    //     kotlinCompilerExtensionVersion = "..."
+    // }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
